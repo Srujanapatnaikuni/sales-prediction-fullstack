@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Prediction Dashboard</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Inter, "Segoe UI", Arial, sans-serif;
+            background: #f4f7fb;
+            color: #172033;
+            line-height: 1.5;
+        }
+
+        header {
+            background: linear-gradient(135deg, #0f172a, #1e3a8a);
+            color: white;
+            padding: 34px 5%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::after {
+            content: "";
+            position: absolute;
+            width: 260px;
+            height: 260px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.07);
+            right: 5%;
+            top: -120px;
+        }
+
+        header h1 {
+            font-size: 32px;
+            letter-spacing: -0.5px;
+            position: relative;
+            z-index: 1;
+        }
+
+        header p {
+            margin-top: 6px;
+            color: #cbd5e1;
+            position: relative;
+            z-index: 1;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1250px;
+            margin: 30px auto 60px;
+        }
+
+        .section-title {
+            margin-bottom: 18px;
+        }
+
+        .section-title h2 {
+            font-size: 22px;
+        }
+
+        .section-title p {
+            color: #64748b;
+            font-size: 14px;
+            margin-top: 3px;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .kpi-card {
+            background: white;
+            border: 1px solid #e7ebf2;
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow: 0 8px 25px rgba(15, 23, 42, 0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.09);
+        }
+
+        .kpi-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .kpi-label {
+            color: #64748b;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .kpi-icon {
+            width: 38px;
+            height: 38px;
+            display: grid;
+            place-items: center;
+            border-radius: 10px;
+            background: #eff6ff;
+            font-size: 18px;
+        }
+
+        .kpi-value {
+            font-size: 29px;
+            font-weight: 800;
+            margin-top: 14px;
+            color: #0f172a;
+        }
+
+        .kpi-sub {
+            color: #94a3b8;
+            font-size: 12px;
+            margin-top: 3px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1.25fr 0.75fr;
+            gap: 22px;
+            margin-bottom: 22px;
+        }
+
+        .panel {
+            background: white;
+            border: 1px solid #e7ebf2;
+            border-radius: 16px;
+            padding: 26px;
+            box-shadow: 0 8px 25px rgba(15, 23, 42, 0.05);
+        }
+
+        .panel-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 22px;
+        }
+
+        .panel-head h2 {
+            font-size: 20px;
+        }
+
+        .panel-head p {
+            color: #64748b;
+            font-size: 13px;
+            margin-top: 3px;
+        }
+
+        .badge {
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #ecfdf5;
+            color: #047857;
+            font-size: 11px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .prediction-form {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 17px;
+        }
+
+        label {
+            display: block;
+            color: #334155;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 7px;
+        }
+
+        input {
+            width: 100%;
+            border: 1px solid #d7dee9;
+            border-radius: 10px;
+            padding: 13px 14px;
+            font-size: 15px;
+            outline: none;
+            background: #fbfcfe;
+            transition: 0.2s;
+        }
+
+        input:focus {
+            border-color: #2563eb;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.09);
+        }
+
+        .predict-button {
+            grid-column: 1 / -1;
+            border: none;
+            border-radius: 10px;
+            padding: 14px 20px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .predict-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 18px rgba(37, 99, 235, 0.22);
+        }
+
+        .predict-button:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-card {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 13px;
+            background: linear-gradient(135deg, #eff6ff, #f8fbff);
+            border: 1px solid #dbeafe;
+            display: none;
+        }
+
+        .result-label {
+            color: #64748b;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .result-value {
+            color: #1d4ed8;
+            font-size: 38px;
+            font-weight: 900;
+            margin-top: 2px;
+        }
+
+        .message {
+            margin-top: 12px;
+            font-size: 13px;
+            font-weight: 700;
+            min-height: 20px;
+        }
+
+        .latest-kpi {
+            min-height: 100%;
+            background: linear-gradient(145deg, #111827, #1e40af);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .latest-kpi::after {
+            content: "";
+            position: absolute;
+            width: 190px;
+            height: 190px;
+            border-radius: 50%;
+            border: 35px solid rgba(255,255,255,0.06);
+            right: -75px;
+            bottom: -85px;
+        }
+
+        .latest-kpi .panel-head p,
+        .latest-kpi .result-label {
+            color: #bfdbfe;
+        }
+
+        .latest-number {
+            font-size: 52px;
+            font-weight: 900;
+            margin-top: 35px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .latest-unit {
+            color: #dbeafe;
+            font-size: 13px;
+        }
+
+        .latest-meta {
+            margin-top: 28px;
+            padding-top: 18px;
+            border-top: 1px solid rgba(255,255,255,0.15);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .latest-meta span {
+            display: block;
+            color: #bfdbfe;
+            font-size: 11px;
+        }
+
+        .latest-meta strong {
+            display: block;
+            margin-top: 3px;
+            font-size: 14px;
+        }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 22px;
+            margin-bottom: 22px;
+        }
+
+        .chart-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        svg {
+            width: 100%;
+            min-width: 500px;
+            height: 280px;
+            display: block;
+        }
+
+        .empty-chart {
+            min-height: 240px;
+            display: grid;
+            place-items: center;
+            color: #94a3b8;
+            font-size: 14px;
+            text-align: center;
+            border: 1px dashed #dbe2ea;
+            border-radius: 12px;
+            background: #fafbfd;
+        }
+
+        .history-panel {
+            margin-bottom: 25px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 760px;
+        }
+
+        th,
+        td {
+            padding: 14px 12px;
+            text-align: center;
+            border-bottom: 1px solid #edf0f5;
+            font-size: 13px;
+        }
+
+        th {
+            background: #f8fafc;
+            color: #475569;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        tbody tr:hover {
+            background: #f8fbff;
+        }
+
+        .id-pill {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-weight: 800;
+            font-size: 11px;
+        }
+
+        .sales-pill {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 7px;
+            background: #ecfdf5;
+            color: #047857;
+            font-weight: 800;
+        }
+
+        .status {
+            color: #059669;
+            font-weight: 700;
+            font-size: 12px;
+        }
+
+        .empty {
+            padding: 30px;
+            color: #94a3b8;
+            text-align: center;
+        }
+
+        footer {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 12px;
+            padding-top: 5px;
+        }
+
+        @media (max-width: 1000px) {
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .dashboard-grid,
+            .analytics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 650px) {
+            header {
+                padding: 28px 5%;
+            }
+
+            header h1 {
+                font-size: 25px;
+            }
+
+            .container {
+                width: 94%;
+                margin-top: 20px;
+            }
+
+            .kpi-grid,
+            .prediction-form {
+                grid-template-columns: 1fr;
+            }
+
+            .panel {
+                padding: 20px;
+            }
+
+            .latest-number {
+                font-size: 42px;
+            }
+        }
+    
+/* ===== BLACK / DARK THEME ===== */
+:root {
+    --bg: #07090d;
+    --surface: #0d1117;
+    --surface-2: #111827;
+    --border: #202938;
+    --text: #f3f4f6;
+    --muted: #9ca3af;
+    --accent: #3b82f6;
+    --accent-2: #2563eb;
+}
+
+body {
+    background: #07090d !important;
+    color: #f3f4f6 !important;
+}
+
+header {
+    background: linear-gradient(135deg, #030712, #0b1220 55%, #111827) !important;
+    border-bottom: 1px solid #202938;
+}
+
+header p {
+    color: #9ca3af !important;
+}
+
+.container {
+    background: transparent;
+}
+
+.section-title h2,
+.panel-head h2 {
+    color: #f8fafc !important;
+}
+
+.section-title p,
+.panel-head p {
+    color: #9ca3af !important;
+}
+
+.kpi-card,
+.panel,
+.analytics-box,
+.history-box,
+.chart-card,
+.table-container {
+    background: #0d1117 !important;
+    border-color: #202938 !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35) !important;
+}
+
+.kpi-card:hover,
+.panel:hover {
+    box-shadow: 0 14px 35px rgba(0,0,0,0.5) !important;
+}
+
+.kpi-label {
+    color: #aab4c3 !important;
+}
+
+.kpi-value {
+    color: #f8fafc !important;
+}
+
+.kpi-sub {
+    color: #6b7280 !important;
+}
+
+.kpi-icon {
+    background: #111c30 !important;
+}
+
+label {
+    color: #d1d5db !important;
+}
+
+input {
+    background: #0a0f16 !important;
+    color: #f8fafc !important;
+    border-color: #293548 !important;
+}
+
+input::placeholder {
+    color: #6b7280 !important;
+}
+
+input:focus {
+    background: #0d1117 !important;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 4px rgba(59,130,246,0.15) !important;
+}
+
+.predict-button {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+}
+
+.badge {
+    background: #062e22 !important;
+    color: #34d399 !important;
+    border: 1px solid #064e3b;
+}
+
+table {
+    color: #e5e7eb !important;
+}
+
+th {
+    background: #111827 !important;
+    color: #9ca3af !important;
+    border-color: #202938 !important;
+}
+
+td {
+    border-color: #202938 !important;
+    color: #d1d5db !important;
+}
+
+tr:hover td {
+    background: #111827 !important;
+}
+
+.latest-kpi,
+.result-box {
+    background: linear-gradient(145deg, #0b1220, #111c3a) !important;
+    border-color: #24365c !important;
+}
+
+.latest-kpi h2,
+.result-box h2 {
+    color: #ffffff !important;
+}
+
+.chart {
+    background: #090d13 !important;
+    border-color: #202938 !important;
+}
+
+.chart-empty,
+.empty {
+    color: #6b7280 !important;
+}
+
+footer {
+    background: #030712 !important;
+    color: #6b7280 !important;
+    border-top: 1px solid #202938 !important;
+}
+
+a {
+    color: #60a5fa;
+}
+
+::-webkit-scrollbar {
+    width: 9px;
+}
+
+::-webkit-scrollbar-track {
+    background: #07090d;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #293548;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #3b82f6;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>Sales Prediction Dashboard</h1>
+    <p>Machine Learning powered advertising sales analytics</p>
+</header>
+
+<div class="container">
+
+    <div class="section-title">
+        <h2>Overview</h2>
+        <p>Monitor prediction activity and advertising performance in one place.</p>
+    </div>
+
+    <!-- KPI CARDS -->
+    <div class="kpi-grid">
+
+        <div class="kpi-card">
+            <div class="kpi-top">
+                <div class="kpi-label">Total Predictions</div>
+                <div class="kpi-icon">🔢</div>
+            </div>
+            <div class="kpi-value" id="totalPredictions">0</div>
+            <div class="kpi-sub">Predictions stored in database</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-top">
+                <div class="kpi-label">Latest Prediction</div>
+                <div class="kpi-icon">🎯</div>
+            </div>
+            <div class="kpi-value" id="latestPrediction">0.00</div>
+            <div class="kpi-sub">Most recent predicted sales</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-top">
+                <div class="kpi-label">Average Prediction</div>
+                <div class="kpi-icon">📊</div>
+            </div>
+            <div class="kpi-value" id="averagePrediction">0.00</div>
+            <div class="kpi-sub">Average across all predictions</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-top">
+                <div class="kpi-label">System Status</div>
+                <div class="kpi-icon">✓</div>
+            </div>
+            <div class="kpi-value" id="systemStatus">Ready</div>
+            <div class="kpi-sub">Spring Boot + ML API</div>
+        </div>
+
+    </div>
+
+    <!-- PREDICTION + LATEST KPI -->
+    <div class="dashboard-grid">
+
+        <div class="panel">
+            <div class="panel-head">
+                <div>
+                    <h2>New Sales Prediction</h2>
+                    <p>Enter advertising expenditure to generate a sales prediction.</p>
+                </div>
+                <span class="badge">ML MODEL</span>
+            </div>
+
+            <div class="prediction-form">
+
+                <div>
+                    <label for="tv">TV Advertising</label>
+                    <input type="number" id="tv" placeholder="Enter TV spending" min="0" step="any">
+                </div>
+
+                <div>
+                    <label for="radio">Radio Advertising</label>
+                    <input type="number" id="radio" placeholder="Enter Radio spending" min="0" step="any">
+                </div>
+
+                <div>
+                    <label for="newspaper">Newspaper Advertising</label>
+                    <input type="number" id="newspaper" placeholder="Enter Newspaper spending" min="0" step="any">
+                </div>
+
+                <button class="predict-button" id="predictButton" onclick="predictSales()">
+                    Predict Sales
+                </button>
+
+            </div>
+
+            <div class="result-card" id="resultBox">
+                <div class="result-label">Predicted Sales</div>
+                <div class="result-value" id="predictionValue">0.00</div>
+            </div>
+
+            <div class="message" id="message"></div>
+        </div>
+
+        <div class="panel latest-kpi">
+            <div class="panel-head">
+                <div>
+                    <h2>Latest Prediction KPI</h2>
+                    <p>Most recently generated model output.</p>
+                </div>
+            </div>
+
+            <div class="result-label">Predicted Sales</div>
+            <div class="latest-number" id="latestLarge">0.00</div>
+            <div class="latest-unit">sales units</div>
+
+            <div class="latest-meta">
+                <div>
+                    <span>Prediction ID</span>
+                    <strong id="latestId">—</strong>
+                </div>
+                <div>
+                    <span>Recorded</span>
+                    <strong id="latestTime">—</strong>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ANALYTICS -->
+    <div class="analytics-grid">
+
+        <div class="panel">
+            <div class="panel-head">
+                <div>
+                    <h2>📊 Prediction Chart</h2>
+                    <p>Predicted sales across prediction history.</p>
+                </div>
+            </div>
+
+            <div class="chart-wrap" id="predictionChartArea">
+                <div class="empty-chart">Prediction data will appear here.</div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-head">
+                <div>
+                    <h2>📈 Advertising vs Sales</h2>
+                    <p>Relationship between total advertising spend and predicted sales.</p>
+                </div>
+            </div>
+
+            <div class="chart-wrap" id="advertisingChartArea">
+                <div class="empty-chart">Advertising and sales data will appear here.</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- HISTORY -->
+    <div class="panel history-panel">
+
+        <div class="panel-head">
+            <div>
+                <h2>🕒 Prediction History</h2>
+                <p>Recent prediction activity retrieved from the backend database.</p>
+            </div>
+            <span class="badge" id="historyCount">0 records</span>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>TV</th>
+                        <th>Radio</th>
+                        <th>Newspaper</th>
+                        <th>Total Ad Spend</th>
+                        <th>Predicted Sales</th>
+                        <th>Status</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+
+                <tbody id="historyTable">
+                    <tr>
+                        <td colspan="8" class="empty">Loading prediction history...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <footer>
+        Sales Prediction System • Spring Boot • Flask ML • MySQL
+    </footer>
+
+</div>
+
+<script>
+    const API_URL = "http://localhost:8080";
+
+    function formatNumber(value) {
+        return Number(value).toFixed(2);
+    }
+
+    function getStoredTime(id) {
+        const times = JSON.parse(localStorage.getItem("predictionTimes") || "{}");
+        return times[id] || null;
+    }
+
+    function savePredictionTime(id) {
+        const times = JSON.parse(localStorage.getItem("predictionTimes") || "{}");
+        times[id] = new Date().toLocaleString();
+        localStorage.setItem("predictionTimes", JSON.stringify(times));
+        return times[id];
+    }
+
+    function getDisplayTime(id, isLatest = false) {
+        const stored = getStoredTime(id);
+        if (stored) return stored;
+        return isLatest ? "Just now" : "Saved";
+    }
+
+    async function predictSales() {
+        const tv = document.getElementById("tv").value;
+        const radio = document.getElementById("radio").value;
+        const newspaper = document.getElementById("newspaper").value;
+
+        const message = document.getElementById("message");
+        const resultBox = document.getElementById("resultBox");
+        const predictionValue = document.getElementById("predictionValue");
+        const button = document.getElementById("predictButton");
+
+        if (tv === "" || radio === "" || newspaper === "") {
+            message.style.color = "#dc2626";
+            message.textContent = "Please enter all advertising values.";
+            return;
+        }
+
+        button.disabled = true;
+        button.textContent = "Predicting...";
+        message.textContent = "";
+
+        document.getElementById("systemStatus").textContent = "Working";
+
+        try {
+            const response = await fetch(`${API_URL}/predict`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    tv: Number(tv),
+                    radio: Number(radio),
+                    newspaper: Number(newspaper)
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error("Prediction request failed");
+            }
+
+            const data = await response.json();
+            const prediction = Number(data.predicted_sales);
+
+            predictionValue.textContent = prediction.toFixed(2);
+            resultBox.style.display = "block";
+
+            message.style.color = "#059669";
+            message.textContent = "Prediction completed successfully.";
+
+            document.getElementById("systemStatus").textContent = "Ready";
+
+            await loadHistory();
+
+        } catch (error) {
+            message.style.color = "#dc2626";
+            message.textContent =
+                "Unable to connect to the backend. Make sure Spring Boot and Flask are running.";
+
+            document.getElementById("systemStatus").textContent = "Offline";
+            console.error(error);
+
+        } finally {
+            button.disabled = false;
+            button.textContent = "Predict Sales";
+        }
+    }
+
+    function renderPredictionChart(data) {
+        const area = document.getElementById("predictionChartArea");
+
+        if (!data.length) {
+            area.innerHTML = '<div class="empty-chart">No prediction data available yet.</div>';
+            return;
+        }
+
+        const width = 600;
+        const height = 280;
+        const left = 45;
+        const right = 20;
+        const top = 20;
+        const bottom = 45;
+        const chartWidth = width - left - right;
+        const chartHeight = height - top - bottom;
+
+        const values = data.map(item => Number(item.predictedSales));
+        const maxValue = Math.max(...values, 1);
+        const step = data.length === 1 ? chartWidth : chartWidth / (data.length - 1);
+
+        let points = "";
+
+        data.forEach((item, index) => {
+            const x = data.length === 1
+                ? left + chartWidth / 2
+                : left + index * step;
+
+            const y = top + chartHeight - (Number(item.predictedSales) / maxValue) * chartHeight;
+
+            points += `${x},${y} `;
+        });
+
+        let circles = "";
+        let labels = "";
+
+        data.forEach((item, index) => {
+            const x = data.length === 1
+                ? left + chartWidth / 2
+                : left + index * step;
+
+            const y = top + chartHeight - (Number(item.predictedSales) / maxValue) * chartHeight;
+
+            circles += `
+                <circle cx="${x}" cy="${y}" r="5"
+                    fill="#2563eb" stroke="white" stroke-width="3">
+                    <title>Prediction #${item.id}: ${formatNumber(item.predictedSales)}</title>
+                </circle>
+            `;
+
+            labels += `
+                <text x="${x}" y="${height - 18}" text-anchor="middle"
+                    font-size="10" fill="#64748b">#${item.id}</text>
+            `;
+        });
+
+        let grid = "";
+
+        for (let i = 0; i <= 4; i++) {
+            const y = top + (chartHeight / 4) * i;
+            const value = maxValue - (maxValue / 4) * i;
+
+            grid += `
+                <line x1="${left}" y1="${y}" x2="${width - right}" y2="${y}"
+                    stroke="#e8edf4" stroke-width="1"/>
+                <text x="${left - 8}" y="${y + 4}" text-anchor="end"
+                    font-size="10" fill="#94a3b8">${value.toFixed(1)}</text>
+            `;
+        }
+
+        area.innerHTML = `
+            <svg viewBox="0 0 ${width} ${height}" role="img"
+                aria-label="Prediction sales trend chart">
+                ${grid}
+                <line x1="${left}" y1="${top + chartHeight}"
+                    x2="${width - right}" y2="${top + chartHeight}"
+                    stroke="#cbd5e1"/>
+                <polyline points="${points}" fill="none"
+                    stroke="#2563eb" stroke-width="3"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+                ${circles}
+                ${labels}
+            </svg>
+        `;
+    }
+
+    function renderAdvertisingChart(data) {
+        const area = document.getElementById("advertisingChartArea");
+
+        if (!data.length) {
+            area.innerHTML = '<div class="empty-chart">No advertising data available yet.</div>';
+            return;
+        }
+
+        const width = 600;
+        const height = 280;
+        const left = 52;
+        const right = 20;
+        const top = 20;
+        const bottom = 45;
+        const chartWidth = width - left - right;
+        const chartHeight = height - top - bottom;
+
+        const spends = data.map(item =>
+            Number(item.tv) + Number(item.radio) + Number(item.newspaper)
+        );
+
+        const sales = data.map(item => Number(item.predictedSales));
+
+        const maxSpend = Math.max(...spends, 1);
+        const maxSales = Math.max(...sales, 1);
+
+        let circles = "";
+
+        data.forEach((item, index) => {
+            const x = left + (spends[index] / maxSpend) * chartWidth;
+            const y = top + chartHeight - (sales[index] / maxSales) * chartHeight;
+
+            circles += `
+                <circle cx="${x}" cy="${y}" r="6"
+                    fill="#7c3aed" stroke="white" stroke-width="3">
+                    <title>
+                        #${item.id} • Ad Spend: ${formatNumber(spends[index])}
+                        • Sales: ${formatNumber(sales[index])}
+                    </title>
+                </circle>
+            `;
+        });
+
+        let grid = "";
+
+        for (let i = 0; i <= 4; i++) {
+            const y = top + (chartHeight / 4) * i;
+            const value = maxSales - (maxSales / 4) * i;
+
+            grid += `
+                <line x1="${left}" y1="${y}" x2="${width - right}" y2="${y}"
+                    stroke="#e8edf4" stroke-width="1"/>
+                <text x="${left - 8}" y="${y + 4}" text-anchor="end"
+                    font-size="10" fill="#94a3b8">${value.toFixed(1)}</text>
+            `;
+        }
+
+        area.innerHTML = `
+            <svg viewBox="0 0 ${width} ${height}" role="img"
+                aria-label="Advertising spend versus sales scatter chart">
+                ${grid}
+                <line x1="${left}" y1="${top + chartHeight}"
+                    x2="${width - right}" y2="${top + chartHeight}"
+                    stroke="#cbd5e1"/>
+                <line x1="${left}" y1="${top}"
+                    x2="${left}" y2="${top + chartHeight}"
+                    stroke="#cbd5e1"/>
+                <text x="${width / 2}" y="${height - 7}"
+                    text-anchor="middle" font-size="11" fill="#64748b">
+                    Total Advertising Spend
+                </text>
+                <text x="13" y="${height / 2}"
+                    transform="rotate(-90 13 ${height / 2})"
+                    text-anchor="middle" font-size="11" fill="#64748b">
+                    Predicted Sales
+                </text>
+                ${circles}
+            </svg>
+        `;
+    }
+
+    function renderHistory(data) {
+        const table = document.getElementById("historyTable");
+
+        if (!data.length) {
+            table.innerHTML = `
+                <tr>
+                    <td colspan="8" class="empty">
+                        No predictions available.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        const sorted = [...data].sort((a, b) => Number(b.id) - Number(a.id));
+
+        table.innerHTML = "";
+
+        sorted.forEach((prediction, index) => {
+            const totalSpend =
+                Number(prediction.tv) +
+                Number(prediction.radio) +
+                Number(prediction.newspaper);
+
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+                <td><span class="id-pill">#${prediction.id}</span></td>
+                <td>${formatNumber(prediction.tv)}</td>
+                <td>${formatNumber(prediction.radio)}</td>
+                <td>${formatNumber(prediction.newspaper)}</td>
+                <td>${formatNumber(totalSpend)}</td>
+                <td><span class="sales-pill">${formatNumber(prediction.predictedSales)}</span></td>
+                <td><span class="status">● Completed</span></td>
+                <td>${getDisplayTime(prediction.id, index === 0)}</td>
+            `;
+
+            table.appendChild(row);
+        });
+    }
+
+    function updateKPIs(data) {
+        const count = data.length;
+
+        document.getElementById("totalPredictions").textContent = count;
+        document.getElementById("historyCount").textContent =
+            `${count} record${count === 1 ? "" : "s"}`;
+
+        if (!count) {
+            document.getElementById("latestPrediction").textContent = "0.00";
+            document.getElementById("averagePrediction").textContent = "0.00";
+            document.getElementById("latestLarge").textContent = "0.00";
+            document.getElementById("latestId").textContent = "—";
+            document.getElementById("latestTime").textContent = "—";
+            return;
+        }
+
+        const sorted = [...data].sort((a, b) => Number(b.id) - Number(a.id));
+        const latest = sorted[0];
+
+        const total = data.reduce(
+            (sum, item) => sum + Number(item.predictedSales),
+            0
+        );
+
+        const average = total / count;
+
+        document.getElementById("latestPrediction").textContent =
+            formatNumber(latest.predictedSales);
+
+        document.getElementById("averagePrediction").textContent =
+            formatNumber(average);
+
+        document.getElementById("latestLarge").textContent =
+            formatNumber(latest.predictedSales);
+
+        document.getElementById("latestId").textContent =
+            `#${latest.id}`;
+
+        document.getElementById("latestTime").textContent =
+            getDisplayTime(latest.id, true);
+    }
+
+    async function loadHistory() {
+        const table = document.getElementById("historyTable");
+
+        try {
+            const response = await fetch(`${API_URL}/predictions`);
+
+            if (!response.ok) {
+                throw new Error("History request failed");
+            }
+
+            const data = await response.json();
+
+            if (data.length > 0) {
+                const latest = [...data].sort(
+                    (a, b) => Number(b.id) - Number(a.id)
+                )[0];
+
+                if (!getStoredTime(latest.id)) {
+                    savePredictionTime(latest.id);
+                }
+            }
+
+            updateKPIs(data);
+            renderHistory(data);
+            renderPredictionChart([...data].sort(
+                (a, b) => Number(a.id) - Number(b.id)
+            ));
+            renderAdvertisingChart(data);
+
+            document.getElementById("systemStatus").textContent = "Ready";
+
+        } catch (error) {
+            table.innerHTML = `
+                <tr>
+                    <td colspan="8" class="empty">
+                        Unable to load prediction history.
+                    </td>
+                </tr>
+            `;
+
+            document.getElementById("systemStatus").textContent = "Offline";
+
+            console.error(error);
+        }
+    }
+
+    window.addEventListener("load", loadHistory);
+</script>
+
+</body>
+</html>
