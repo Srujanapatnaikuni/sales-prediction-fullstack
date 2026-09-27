@@ -3,6 +3,7 @@ package sales_prediction_backend.controller;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +22,9 @@ public class PredictionController {
     private final RestTemplate restTemplate;
     private final PredictionRepository predictionRepository;
 
+    @Value("${ml.service.url}")
+    private String mlServiceUrl;
+
     public PredictionController(PredictionRepository predictionRepository) {
         this.restTemplate = new RestTemplate();
         this.predictionRepository = predictionRepository;
@@ -28,8 +32,6 @@ public class PredictionController {
 
     @PostMapping("/predict")
     public ResponseEntity<?> predict(@RequestBody PredictionRequest request) {
-
-        String mlServiceUrl = "http://localhost:5000/predict";
 
         Map<String, Object> response = restTemplate.postForObject(
                 mlServiceUrl,
